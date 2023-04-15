@@ -1,4 +1,5 @@
 const doctor= require('../model/doctor');
+const jwt = require('jsonwebtoken');
 const patients= require('../model/patients');
 const report = require('../model/report');
 
@@ -8,11 +9,18 @@ module.exports.create= async(req,res)=>{
         //find patient
         let Patients=await patients.findById(req.query.id);
         if(Patients){
+            // Get doctor username from JWT token
+            const authHeader = req.headers.authorization;
+            const token = authHeader.split(' ')[1];
+            const decoded = jwt.decode(token);
+            const doctorUsername = decoded.username;
             //Create patient Repot
             let Report = await report.create({
                 status : req.body.status,
                 date : `${new Date(Date.now()).toLocaleDateString().toString()}`,
-                patient : req.query.id
+                patient : req.query.id,
+                doctor: doctorUsername
+               
             });
             return res.status(200).json({
                 message : "Report Generated Successfully",
